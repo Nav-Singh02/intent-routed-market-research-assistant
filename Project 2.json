@@ -1,0 +1,634 @@
+{
+  "name": "Project 2 - Market Research Assistant",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "cb66011e-5df8-490d-95ff-75eb18171f22",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f43af7c-1ad8-4d9b-b70a-5c91885b34df",
+              "name": "topic",
+              "value": "Impact of GLP-1 weight loss drugs on primary care delivery",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        220,
+        0
+      ],
+      "id": "c7a0f6fd-0125-4e02-b30d-8ef9127e9f18",
+      "name": "User Input"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a market research assistant.\n\nClassify the following research topic into one of these three categories:\n- Finance\n- Healthcare\n- General\n\nOnly reply with the name of the category.\n\nTopic: {{$json[\"topic\"]}}\n"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        420,
+        0
+      ],
+      "id": "2a43d538-4890-4274-8800-78942d2d4f9f",
+      "name": "Intent Classifier",
+      "credentials": {
+        "openAiApi": {
+          "id": "E5CjlLabnRP0BxhS",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{$json[\"message\"][\"content\"]}}",
+                    "rightValue": "Finance",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "712a2fb1-de0c-447d-9096-d6c7f438e928"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Finance"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c07db526-72e6-443a-9f3b-a400fc912151",
+                    "leftValue": "={{$json[\"message\"][\"content\"]}}",
+                    "rightValue": "Healthcare",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Healthcare"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c5cd9835-7707-4d34-b5c9-806b6e5029f1",
+                    "leftValue": "={{$json[\"message\"][\"content\"]}}",
+                    "rightValue": "General",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "General"
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        920,
+        -140
+      ],
+      "id": "16b1d1fe-5ccd-4657-98b5-275ceb2f9485",
+      "name": "Route by Intent"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are a financial market research assistant.\n\nAnalyze the following topic and summarize the key insights from a financial and business perspective. Focus on areas such as stock performance, company financials, investor sentiment, economic indicators, and relevant market trends.\n\nIf applicable, prioritize insights related to the most recent fiscal quarter, including earnings reports, investor guidance, and updated financial disclosures.\n\nOnly return full sentences. Stop at the last complete sentence, and do not include any sentence fragments or unfinished thoughts.\n\nTopic: {{$json[\"topic\"]}}\n"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7,
+          "topP": 1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1360,
+        -340
+      ],
+      "id": "8daef4e9-65fa-4645-ac98-f60c9b01af98",
+      "name": "Finance Summarizer",
+      "credentials": {
+        "openAiApi": {
+          "id": "E5CjlLabnRP0BxhS",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        740,
+        -140
+      ],
+      "id": "adeaaafe-68ac-4fb0-a8ed-d5cc0df85ca5",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f43af7c-1ad8-4d9b-b70a-5c91885b34df",
+              "name": "topic",
+              "value": "={{$json[\"topic\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        -140
+      ],
+      "id": "47c2d797-e4c4-4470-9d8a-1d5ce7982111",
+      "name": "User Input3"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f43af7c-1ad8-4d9b-b70a-5c91885b34df",
+              "name": "topic",
+              "value": "={{$json[\"topic\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        -340
+      ],
+      "id": "789d6d84-5915-49f1-9dfe-0d77cb7b8e51",
+      "name": "User Input2"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI market research assistant specializing in the healthcare industry.\n\nPlease analyze the topic provided and extract key insights specifically from a healthcare and clinical innovation perspective. Highlight trends, relevant regulations, medical advancements, or public health implications related to the topic.\n\nAssume the user is seeking insights that would help inform a product strategy, healthcare investment, or policy decision.\n\nOnly return relevant and structured information in professional tone.\n\nFocus your summary on the most recent clinical developments, regulatory updates, and healthcare trends available. Ensure all points are logically grouped and concise.\n\nOnly return full sentences. Stop at the last complete sentence, and do not include any sentence fragments or unfinished thoughts.\n\n {{ $json.topic }}"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1360,
+        -140
+      ],
+      "id": "5553773e-6709-4c00-9efe-5360524897cd",
+      "name": "Healthcare Summarizer",
+      "credentials": {
+        "openAiApi": {
+          "id": "E5CjlLabnRP0BxhS",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6f43af7c-1ad8-4d9b-b70a-5c91885b34df",
+              "name": "topic",
+              "value": "={{$json[\"topic\"]}}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1160,
+        60
+      ],
+      "id": "e79b2e17-b235-4d4a-945e-88ebc7383877",
+      "name": "User Input4"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an AI assistant specializing in summarizing general market research topics.\n\nPlease analyze the given topic and generate a concise, structured summary highlighting key takeaways, trends, business implications, or emerging insights.\n\nThis topic may fall outside of traditional industries like finance or healthcare, so focus on extracting useful and relevant insights for a broad audience, such as product managers, executives, or entrepreneurs.\n\nStructure your response clearly and use professional language. Do not include unfinished sentences.\n\nOnly return full sentences. Stop at the last complete sentence, and do not include any sentence fragments or unfinished thoughts.\n\n"
+            }
+          ]
+        },
+        "options": {
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        1360,
+        60
+      ],
+      "id": "c57b8f34-62a1-4c01-8735-657da7621708",
+      "name": "General Summarizer",
+      "credentials": {
+        "openAiApi": {
+          "id": "E5CjlLabnRP0BxhS",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "numberInputs": 6,
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1760,
+        -180
+      ],
+      "id": "f913a4a4-6859-46ef-a309-18a18e22e6eb",
+      "name": "Merge1"
+    },
+    {
+      "parameters": {
+        "sendTo": "navinator835@gmail.com",
+        "subject": "={{ $json[\"topic\"] }} – Insight Digest",
+        "message": "=<h2>🧠 Market Research Summary</h2>\n\n<p><strong>Topic:</strong> {{ $json[\"topic\"] }}</p>\n\n<h3>Summary:</h3>\n<p>{{ $json[\"content\"] }}</p>\n",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2100,
+        -120
+      ],
+      "id": "d4f71cd4-2e3e-498a-9d4a-2b8b55644ba7",
+      "name": "Send Email",
+      "webhookId": "3102bf43-0c4a-4866-b24b-c9b0b67e8166",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "c1qMB82DsFSyyQXc",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c12ace59-d7dc-42fc-a83a-541d88c457aa",
+              "name": "topic",
+              "value": "={{ $json[\"topic\"] }}",
+              "type": "string"
+            },
+            {
+              "id": "959b6dc8-4616-47c6-9616-d4b05c6a1873",
+              "name": "content",
+              "value": "=\t{{ $json[\"message\"][\"content\"] }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1940,
+        -120
+      ],
+      "id": "235b5556-d634-42e2-a2fe-81b7425cf6a4",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "content": "## 1.) Intent-Routed AI Market Research Assistant",
+        "height": 80,
+        "width": 560
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -340
+      ],
+      "id": "ad313b98-a60e-495b-8b7e-bfe4500955c4",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "User Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Input": {
+      "main": [
+        [
+          {
+            "node": "Intent Classifier",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Intent Classifier": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by Intent": {
+      "main": [
+        [
+          {
+            "node": "User Input2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Input3",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "User Input4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Route by Intent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "User Input2": {
+      "main": [
+        [
+          {
+            "node": "Finance Summarizer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "User Input3": {
+      "main": [
+        [
+          {
+            "node": "Healthcare Summarizer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "User Input4": {
+      "main": [
+        [
+          {
+            "node": "General Summarizer",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Healthcare Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "General Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Finance Summarizer": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Email": {
+      "main": [
+        []
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Send Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "502831a4-dd4b-4cdc-a129-a96f94b41249",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf995305b30eeb2ed4c5b88832fedcd3a22d43f8cc227cbb623d7b7cb2d7d9c6"
+  },
+  "id": "PGCtHLooNduhUxK1",
+  "tags": []
+}
