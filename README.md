@@ -49,7 +49,7 @@ A single input field + AI routing + industry agents = scalable internal automati
 > **🧠 Market Research Summary**  
 > **Topic**: Pfizer stock margin  
 >  
-> **Summary**: Pfizer Inc. (PFE) has recently captured investor attention... *(see screenshot in repo)*
+> **Summary**: Pfizer Inc. (PFE) has recently captured investor attention...
 
 ---
 
@@ -65,7 +65,6 @@ A single input field + AI routing + industry agents = scalable internal automati
 ## 📁 Files Included
 
 - `intent_routed_market_research.json` – Full n8n workflow
-- `example_email.png` – Screenshot of final email
 - `README.md` – This file
 
 ---
